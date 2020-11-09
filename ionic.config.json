@@ -1,0 +1,7 @@
+{
+  "name": "bulletin",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
