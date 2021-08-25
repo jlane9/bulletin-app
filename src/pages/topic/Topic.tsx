@@ -12,6 +12,8 @@ import {
     IonFooter,
     IonGrid,
     IonHeader,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
     IonIcon,
     IonInput,
     IonItem,
@@ -39,6 +41,7 @@ const Topic: React.FC = () => {
     const {topic_id} = useParams<{ topic_id: string; }>();
     const [topic, setTopic] = useState<TTopic>();
     const [messages, setMessages] = useState<TMessageList>([]);
+    const [offsetAmount, setOffsetAmount] = useState<number>(0);
     const {register, handleSubmit, reset} = useForm();
 
     useEffect(() => {
@@ -61,10 +64,12 @@ const Topic: React.FC = () => {
     }
 
     function getMessagesByTopic(id: string) {
+
         let authToken = getAuthToken();
-        axios.get(`/api/topics/${id}/messages/`, {headers: {'Authorization': `JWT ${authToken}`}})
+        axios.get(`/api/topics/${id}/messages/?offset=${offsetAmount}`, {headers: {'Authorization': `JWT ${authToken}`}})
             .then((response: AxiosResponse) => {
-                setMessages(response.data.results.reverse());
+                setMessages(messages.concat(response.data.results.reverse()));
+                setOffsetAmount(offsetAmount + 50)
             }).catch(() => {
         });
     }
@@ -99,28 +104,33 @@ const Topic: React.FC = () => {
                         </IonToolbar>
                     </IonHeader>
                 }
-                {messages.map((message: TMessage, index: number) => {
-                    return (
-                        <IonCard key={index}>
-                            <IonCardHeader>
-                                <IonItem lines="none">
-                                    <IonCardTitle>{message.creator.username}</IonCardTitle>
-                                    <IonCardSubtitle slot="end">
-                                        {moment.duration(moment().diff(moment(message.created))).hours() < 1
-                                            ? <Moment fromNow={true}>{message.created}</Moment>
-                                            : moment.duration(moment().diff(moment(message.created))).days() < 1
-                                                ? <Moment format="h:mm A">{message.created}</Moment>
-                                                : <Moment format="MM/DD/YYYY h:mm A">{message.created}</Moment>
-                                        }
+                <IonInfiniteScroll >
+                    <IonInfiniteScrollContent loadingText="Getting more items">
 
-                                    </IonCardSubtitle>
-                                </IonItem>
-                            </IonCardHeader>
+                    </IonInfiniteScrollContent>
+                    {messages.map((message: TMessage, index: number) => {
+                        return (
+                            <IonCard key={index}>
+                                <IonCardHeader>
+                                    <IonItem lines="none">
+                                        <IonCardTitle>{message.creator.username}</IonCardTitle>
+                                        <IonCardSubtitle slot="end">
+                                            {moment.duration(moment().diff(moment(message.created))).hours() < 1
+                                                ? <Moment fromNow={true}>{message.created}</Moment>
+                                                : moment.duration(moment().diff(moment(message.created))).days() < 1
+                                                    ? <Moment format="h:mm A">{message.created}</Moment>
+                                                    : <Moment format="MM/DD/YYYY h:mm A">{message.created}</Moment>
+                                            }
 
-                            <IonCardContent>{message.content}</IonCardContent>
-                        </IonCard>
-                    );
-                })}
+                                        </IonCardSubtitle>
+                                    </IonItem>
+                                </IonCardHeader>
+
+                                <IonCardContent>{message.content}</IonCardContent>
+                            </IonCard>
+                        );
+                    })}
+                </IonInfiniteScroll>
             </IonContent>
             { topic &&
                 <IonFooter>
