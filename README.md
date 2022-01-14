@@ -49,5 +49,4 @@ Technologies
 - UI: React (Ionic)
 - Local Deployment: Docker
 - Cloud Service: AWS Lambda (with serverless)
-- CI/CD: Travis CI
 - Testing: Pytest
